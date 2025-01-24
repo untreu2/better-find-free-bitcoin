@@ -22,19 +22,30 @@
             --gray: #928374;
         }
 
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -1;
+            transform: translate(-50%, -50%);
+            background-size: cover;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px;
+            margin: 0;
+            padding: 0;
             background-color: var(--bg0_hard);
-            background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ffwmedia.fandomwire.com%2Fwp-content%2Fuploads%2F2023%2F12%2F15042440%2Fal-pacino-godfather.jpg&f=1&nofb=1&ipt=c5c3577d23441e2419662e66551144deb559ac1f8f3c37cc1a0d7ef89aba772b&ipo=images');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
             color: var(--fg0);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 80vh;
+            min-height: 100vh;
+            overflow: hidden;
         }
 
         .container {
@@ -45,6 +56,7 @@
             max-width: 500px;
             width: 100%;
             text-align: center;
+            z-index: 1;
         }
 
         h1 {
@@ -101,6 +113,11 @@
     </style>
 </head>
 <body>
+    <video autoplay muted loop id="bg-video">
+        <source src="https://m.primal.net/NxLX.mp4" type="video/mp4">
+        Your browser is lame.
+    </video>
+
     <div class="container">
         <h1>better ffbtc</h1>
         <button id="generateBtn">find free btc</button>

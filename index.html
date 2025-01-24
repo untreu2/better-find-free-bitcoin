@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>better ffbtc</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+    <style>
+        :root {
+            --bg0_hard: #1d2021;
+            --bg0: #282828;
+            --bg1: #32302f;
+            --fg0: #fbf1c7;
+            --fg1: #ebdbb2;
+            --red: #fb4934;
+            --green: #b8bb2676;
+            --yellow: #fabd2f;
+            --blue: #83a598;
+            --purple: #d3869b;
+            --aqua: #8ec07c;
+            --orange: #fe8019;
+            --gray: #928374;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: var(--bg0_hard);
+            background-image: url('https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ffwmedia.fandomwire.com%2Fwp-content%2Fuploads%2F2023%2F12%2F15042440%2Fal-pacino-godfather.jpg&f=1&nofb=1&ipt=c5c3577d23441e2419662e66551144deb559ac1f8f3c37cc1a0d7ef89aba772b&ipo=images');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            color: var(--fg0);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+        }
+
+        .container {
+            background-color: rgba(50, 48, 47, 0.8);
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--yellow);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: var(--green);
+            color: var(--fg0);
+            padding: 12px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+        }
+
+        button:hover {
+            background-color: var(--yellow);
+        }
+
+        .output {
+            margin-top: 20px;
+            background-color: var(--bg0);
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            text-align: left;
+        }
+
+        .output p {
+            word-break: break-all;
+            color: var(--fg1);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg0);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--gray);
+            border-radius: 5px;
+            border: 2px solid var(--bg0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>better ffbtc</h1>
+        <button id="generateBtn">find free btc</button>
+        <div class="output" id="output">
+        </div>
+    </div>
+
+    <script>
+        const EC = elliptic.ec;
+        const ec = new EC('secp256k1');
+
+        function generateSecret() {
+            const array = new Uint8Array(32);
+            window.crypto.getRandomValues(array);
+            return Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function privateKeyFromSecret(secret) {
+            const hash = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(secret));
+            return hash.toString(CryptoJS.enc.Hex);
+        }
+
+        function publicKeyFromPrivateKey(privateKey) {
+            const key = ec.keyFromPrivate(privateKey, 'hex');
+            const uncompressed = key.getPublic(false, 'hex');
+            const publicKeyBytes = [];
+            for (let i = 0; i < uncompressed.length; i += 2) {
+                publicKeyBytes.push(parseInt(uncompressed.substr(i, 2), 16));
+            }
+            return publicKeyBytes;
+        }
+
+        function bitcoinAddressFromPublicKey(publicKey) {
+            const sha256Hash = CryptoJS.SHA256(CryptoJS.lib.WordArray.create(publicKey));
+            const ripemd160Hash = CryptoJS.RIPEMD160(sha256Hash);
+            const extendedRipemd160 = '00' + ripemd160Hash.toString(CryptoJS.enc.Hex);
+            const hash1 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(extendedRipemd160));
+            const hash2 = CryptoJS.SHA256(hash1);
+            const checksum = hash2.toString(CryptoJS.enc.Hex).substring(0, 8);
+            const binaryAddress = extendedRipemd160 + checksum;
+            const bytes = [];
+            for (let i = 0; i < binaryAddress.length; i += 2) {
+                bytes.push(parseInt(binaryAddress.substr(i, 2), 16));
+            }
+            return base58Encode(bytes);
+        }
+
+        function base58Encode(bytes) {
+            const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            let num = BigInt(0);
+            for (let i = 0; i < bytes.length; i++) {
+                num = num * BigInt(256) + BigInt(bytes[i]);
+            }
+            let encoded = '';
+            while (num > 0) {
+                const remainder = num % BigInt(58);
+                num = num / BigInt(58);
+                encoded = BASE58_ALPHABET[Number(remainder)] + encoded;
+            }
+            for (let i = 0; i < bytes.length && bytes[i] === 0; i++) {
+                encoded = '1' + encoded;
+            }
+            return encoded;
+        }
+
+        async function checkBalance(address) {
+            const url = `https://blockstream.info/api/address/${address}`;
+
+            while (true) {
+                try {
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 1000);
+
+                    const response = await fetch(url, { signal: controller.signal });
+                    clearTimeout(timeout);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const funded = data.chain_stats.funded_txo_sum || 0;
+                        const spent = data.chain_stats.spent_txo_sum || 0;
+                        const balanceSatoshi = funded - spent;
+                        return (balanceSatoshi / 1e8).toFixed(8);
+                    } else {
+                        throw new Error('Failed to fetch balance');
+                    }
+                } catch (error) {
+                    console.warn(`Request failed, retrying...`);
+                }
+            }
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', async () => {
+            document.getElementById('output').innerHTML = "<p>Generating address, please wait...</p>";
+
+            try {
+                const secret = generateSecret();
+                const privateKey = privateKeyFromSecret(secret);
+                const publicKey = publicKeyFromPrivateKey(privateKey);
+                const bitcoinAddress = bitcoinAddressFromPublicKey(publicKey);
+
+                const balance = await checkBalance(bitcoinAddress);
+
+                document.getElementById('output').innerHTML = `
+                    <p><strong>Secret:</strong> ${secret}</p>
+                    <p><strong>Private Key:</strong> ${privateKey}</p>
+                    <p><strong>Bitcoin Address:</strong> ${bitcoinAddress}</p>
+                    <p><strong>Balance:</strong> ${balance} BTC</p>
+                `;
+            } catch (error) {
+                document.getElementById('output').innerHTML = `<p>Error generating address.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
